@@ -1,5 +1,6 @@
 package io.sovereign.collections;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -7,10 +8,15 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * Truly Immutable Persistent Linked List using Sealed Interface + Records
- * Persistent, thread-safe, and functional.
+ * Truly Immutable Persistent Linked List using Sealed Interface + Records.
+ *
+ * This is a functional, persistent, thread-safe singly-linked list.
+ * It uses structural sharing, making prepend operations O(1) and safe across versions.
+ *
+ * Inspired by Haskell, Scala, and Clojure list implementations.
  */
-public sealed interface ImmutableList<T> permits ImmutableList.Nil, ImmutableList.Cons {
+public sealed interface ImmutableList<T> extends Iterable<T>
+        permits ImmutableList.Nil, ImmutableList.Cons {
 
     record Nil<T>() implements ImmutableList<T> {
         @Override
@@ -22,7 +28,7 @@ public sealed interface ImmutableList<T> permits ImmutableList.Nil, ImmutableLis
     record Cons<T>(T head, ImmutableList<T> tail) implements ImmutableList<T> {
         @Override
         public String toString() {
-            return "[" + head + tail.toStringWithComma() + "]";
+            return "[" + head + toStringWithComma(tail) + "]";
         }
     }
 
@@ -126,10 +132,10 @@ public sealed interface ImmutableList<T> permits ImmutableList.Nil, ImmutableLis
 
     // ====================== String Representation ======================
 
-    private String toStringWithComma() {
-        return switch (this) {
+    private static String toStringWithComma(ImmutableList<?> list) {
+        return switch (list) {
             case Nil() -> "";
-            case Cons(var h, var t) -> ", " + h + t.toStringWithComma();
+            case Cons(var h, var t) -> ", " + h + toStringWithComma(t);
         };
     }
 
@@ -143,5 +149,29 @@ public sealed interface ImmutableList<T> permits ImmutableList.Nil, ImmutableLis
             action.accept(cons.head);
             current = cons.tail;
         }
+    }
+
+    // ====================== Iterable Support ======================
+
+    @Override
+    default Iterator<T> iterator() {
+        return new Iterator<>() {
+            private ImmutableList<T> current = ImmutableList.this;
+
+            @Override
+            public boolean hasNext() {
+                return current instanceof Cons;
+            }
+
+            @Override
+            public T next() {
+                if (!(current instanceof Cons<T> cons)) {
+                    throw new NoSuchElementException();
+                }
+                T value = cons.head;
+                current = cons.tail;
+                return value;
+            }
+        };
     }
 }
