@@ -20,5 +20,16 @@
             <artifactId>pcollections</artifactId>
             <version>5.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+            <version>13.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+            <version>13.0.0</version>
+        </dependency>
     </dependencies>
 </project>
