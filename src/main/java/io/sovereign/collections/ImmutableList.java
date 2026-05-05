@@ -10,10 +10,8 @@ import java.util.function.Predicate;
 /**
  * Truly Immutable Persistent Linked List using Sealed Interface + Records.
  *
- * This is a functional, persistent, thread-safe singly-linked list.
- * It uses structural sharing, making prepend operations O(1) and safe across versions.
- *
- * Inspired by Haskell, Scala, and Clojure list implementations.
+ * Functional, persistent, thread-safe singly-linked list with structural sharing.
+ * Inspired by Haskell, Scala, and Clojure.
  */
 public sealed interface ImmutableList<T> extends Iterable<T>
         permits ImmutableList.Nil, ImmutableList.Cons {
@@ -79,10 +77,8 @@ public sealed interface ImmutableList<T> extends Iterable<T>
 
     default int size() {
         int count = 0;
-        ImmutableList<T> curr = this;
-        while (curr instanceof Cons<T> cons) {
+        for (ImmutableList<T> curr = this; curr instanceof Cons<T> cons; curr = cons.tail) {
             count++;
-            curr = cons.tail;
         }
         return count;
     }
